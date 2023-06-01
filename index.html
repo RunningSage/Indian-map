@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Indian Map and Place Search</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.css" />
+  <style>
+    body {
+      background: linear-gradient(to top, #c1e2e7, #000000);
+      margin: 0;
+      padding: 0;
+    }
+    #map {
+      width: 550px;
+      height: 500px;
+      border: 4px solid rgb(251, 133, 36);
+      border-radius: 5px;
+    }
+
+    #search-bar {
+      margin-top: 50px;
+      width: 300px;
+      height: 50px;
+      padding: 5px;
+      border: 2px solid #161215;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    #search-bar:hover {
+      background-color: #99b2cd;
+    }
+
+    #place-list {
+      margin-top: 10px;
+      list-style-type: none;
+      padding: 0;
+    }
+
+    #k {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-evenly;
+    }
+    #t {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .place-item {
+      margin-bottom: 5px;
+      cursor: pointer;
+      width: 200px;
+    }
+
+    .place-item button {
+      width: 100%;
+      text-align: left;
+    }
+
+    .place-name {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 5px;
+      border-radius: 3px;
+      animation: fade-in 0.5s;
+    }
+
+    @keyframes fade-in {
+      0% {
+        opacity: 0;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+
+    h2 {
+      margin: 10px;
+      text-align: center;
+      color: white;
+    }
+
+    hr {
+      border-color: white;
+      margin: 0 20px;
+    }
+    #y{
+      display: inline;
+      height: 30px;
+      margin-left: 15px;
+    }
+    #w{
+      display: inline;
+      height: 60px;
+    }
+    #p{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="p">  
+    <img src="https://t3.ftcdn.net/jpg/03/39/40/00/360_F_339400042_Go8CyYrod1TGBd5B370WBtbAD3SyHefO.jpg" id="w" alt=""/><h2>MAP OF INDIA</h2><img src="https://cdn.countryflags.com/thumbs/india/flag-400.png" id="y" alt="">
+  </div>
+  <hr>
+  <div id="k">
+    <div id="map"></div>
+    <div id="t">
+      <input id="search-bar" type="text" placeholder="Search for a place">
+      <ul id="place-list">
+        <li class="place-item">
+          <button class="btn btn-success" type="button" data-lat="28.6139" data-lng="77.2090">Delhi</button>
+        </li>
+        <li class="place-item">
+          <button class="btn btn-success" type="button" data-lat="19.0760" data-lng="72.8777">Mumbai</button>
+        </li>
+        <li class="place-item">
+          <button class="btn btn-success" type="button" data-lat="22.5726" data-lng="88.3639">Kolkata</button>
+        </li>
+        <li class="place-item">
+          <button class="btn btn-success" type="button" data-lat="13.0827" data-lng="80.2707">Chennai</button>
+        </li>
+        <li class="place-item">
+          <button class="btn btn-success" type="button" data-lat="12.9716" data-lng="77.5946">Bangalore</button>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+  <script>
+    const map = L.map('map').setView([22.3511, 78.6677], 5);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
+      maxZoom: 20,
+    }).addTo(map);
+
+    const placeList = document.getElementById('place-list');
+    const placeItems = placeList.getElementsByClassName('place-item');
+
+    for (let i = 0; i < placeItems.length; i++) {
+      placeItems[i].addEventListener('click', function () {
+        const lat = parseFloat(this.querySelector('button').dataset.lat);
+        const lng = parseFloat(this.querySelector('button').dataset.lng);
+        const placeName = this.querySelector('button').textContent;
+
+        highlightPlace(lat, lng, placeName);
+      });
+    }
+
+    const searchBar = document.getElementById('search-bar');
+    searchBar.addEventListener('keydown', function (event) {
+      if (event.keyCode === 13) {
+        const query = searchBar.value.toLowerCase();
+        const matchedPlace = Array.from(placeItems).find(item => item.querySelector('button').textContent.toLowerCase() === query);
+        if (matchedPlace) {
+          const lat = parseFloat(matchedPlace.querySelector('button').dataset.lat);
+          const lng = parseFloat(matchedPlace.querySelector('button').dataset.lng);
+          const placeName = matchedPlace.querySelector('button').textContent;
+          highlightPlace(lat, lng, placeName);
+        }
+      }
+    });
+
+    function highlightPlace(lat, lng, placeName) {
+      map.setView([lat, lng], 8);
+
+      clearPlaceNames();
+
+      const placeNameElement = document.createElement('div');
+      placeNameElement.classList.add('place-name');
+      placeNameElement.textContent = placeName;
+      map.getPanes().overlayPane.appendChild(placeNameElement);
+
+      setTimeout(function () {
+        placeNameElement.style.opacity = '1';
+      }, 1000);
+    }
+
+    function clearPlaceNames() {
+      const placeNames = document.getElementsByClassName('place-name');
+      while (placeNames[0]) {
+        placeNames[0].parentNode.removeChild(placeNames[0]);
+      }
+    }
+  </script>
+</body>
+</html>
